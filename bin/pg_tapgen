@@ -21,6 +21,7 @@ Getopt::Long::GetOptions(
     'exclude-schema|N=s@' => \$opts->{exclude_schema},
     'directory|dir=s'     => \$opts->{directory},
     'create-extension|c!' => \$opts->{create_extension},
+    'search-path|s=s@'    => \$opts->{search_path},
     'verbose|v+'          => \$opts->{verbose},
     'help|H'              => \$opts->{help},
     'man|m'               => \$opts->{man},
@@ -57,6 +58,14 @@ sub script(&;$) {
 
     open my $fh, '>:encoding(UTF-8)', $file or die "Cannot open $file: $!\n";
     select $fh;
+    if ($opts->{search_path}) {
+        my $sp = $opts->{search_path};
+        my @sp = @{ $sp } if $sp && @{ $sp };
+#        print "(", @sp, ")\n";
+        # my $sp = join(',',@$opts->{search_path});
+        my $path = join(', ',@sp);
+        print "SET search_path = $path;\n";
+    }
     print "SET client_encoding = 'UTF-8';\n";
     if ($opts->{create_extension}) {
         print "SET client_min_messages = warning;\n",
@@ -533,6 +542,7 @@ distribution in the future.
   -c --create-extension     Include CREATE EXTENSION pgtap statement.
      --no-create-extension  Excluce CREATE EXTENSION pgtap statement.
      --directory DIRECTORY  Directory to which to write the test files.
+  -s PATH                   Force set search_path
   -H --help                 Print a usage statement and exit.
   -m --man                  Print the complete documentation and exit.
   -V --version              Print the version number and exit.
